@@ -24,13 +24,24 @@ REST API — no backend server required.
   color, and shape are translated client-side. Held item names inside
   evolution conditions stay in English (low-traffic edge case).
 - Custom Poké Ball app icon (`src-tauri/icons/`, sourced from `public/pokeball.svg`)
-- **Battle** tab: picks two random Pokemon and plays out a lightweight
-  auto-battle — real base stats (scaled to level 50) and a full 18-type
-  effectiveness chart, but a random move from each Pokemon's own level-up
-  moveset each turn (fetched from PokeAPI for real power/type/damage class)
-  rather than a real 4-move loadout or accuracy/status effects. It's meant to
-  capture the "watching two Pokemon fight" feeling, not be a rules-accurate
-  battle engine.
+- **Battle** tab — a small trainer progression game, not just a one-off fight:
+  - Pick any Pokemon as your starter (Lv.5) the first time you open the tab
+  - Your active team member fights a random wild Pokemon leveled around its
+    own level; a win awards EXP (own hand-tuned curve, not an official
+    growth-rate curve), which can level your Pokemon up
+  - Leveling into a species' real level-up evolution threshold (from
+    PokeAPI's evolution chain data) auto-evolves it — only plain level-up
+    evolutions are handled, not item/trade/friendship ones
+  - After a win, choose whether to add the defeated wild Pokemon to your
+    team; team caps at 6, and capturing while full asks you to release one
+    of your current 6 to make room
+  - Team + active-member choice persists to `localStorage` between sessions
+  - Combat itself: real base stats scaled to each fighter's own level, a
+    full 18-type effectiveness chart, and a random move from the attacker's
+    level-up moveset each turn (real power/type/damage class fetched from
+    PokeAPI) — no accuracy rolls, status moves, or held items. It's meant to
+    capture the "watching your Pokemon fight and grow" feeling, not be a
+    rules-accurate battle engine.
 
 ## Prerequisites (macOS)
 
@@ -81,9 +92,12 @@ developer certificates.
 ```
 src/
   api/          PokeAPI client, types, and formatting helpers
-  hooks/        React Query hooks wrapping the API client
-  components/   Reusable UI pieces (cards, badges, stat bars, evolution chain, moves)
-  pages/        ListPage (browse/search) and DetailPage (full Pokemon info)
+  hooks/        React Query hooks wrapping the API client, plus useBattle (battle orchestration)
+  team/         Team persistence (localStorage), growth/EXP curve, level-evolution lookup
+  battle/       Battle simulation engine (fighter stats, turn resolution, type chart)
+  components/   Reusable UI pieces (cards, badges, stat bars, evolution chain, moves, team/battle UI)
+  pages/        ListPage, DetailPage, BattlePage
+  i18n/         en/ko locale files and i18next setup
 src-tauri/      Rust/Tauri shell (minimal — all logic lives in the webview)
 ```
 

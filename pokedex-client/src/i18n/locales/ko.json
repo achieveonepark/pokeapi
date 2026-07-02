@@ -10,11 +10,19 @@
     "loading": "불러오는 중…"
   },
   "battle": {
-    "idle": "랜덤으로 두 포켓몬을 뽑아 대결시켜 보세요.",
-    "start": "랜덤 대결 시작",
+    "idle": "대표 포켓몬을 고르고 대결을 시작하세요.",
+    "start": "대결 시작",
     "restart": "다시 대결",
     "loading": "포켓몬을 불러오는 중…",
     "level": "Lv.{{level}}",
+    "chooseStarter": "첫 포켓몬을 선택하세요",
+    "myTeam": "내 포켓몬",
+    "capturePrompt": "{{name}}을(를) 포획해서 팀에 합류시킬까요?",
+    "captureYes": "팀에 합류",
+    "captureNo": "놓아주기",
+    "teamFullPrompt": "팀이 가득 찼습니다. {{name}}을(를) 위해 내보낼 포켓몬을 고르거나, 놓아주세요.",
+    "outcomeWin": "승리!",
+    "outcomeLose": "패배...",
     "log": {
       "start": "{{a}}와(과) {{b}}의 대결이 시작됩니다!",
       "hit": "{{attacker}}의 {{move}}! {{defender}}에게 {{damage}}의 데미지!",
@@ -24,7 +32,10 @@
       "critical": "{{attacker}}의 {{move}}! 급소에 맞았다! {{defender}}에게 {{damage}}의 데미지!",
       "noDamage": "{{attacker}}의 {{move}}!",
       "fainted": "{{name}}은(는) 쓰러졌다!",
-      "winner": "{{name}} 승리!"
+      "winner": "{{name}} 승리!",
+      "expGained": "{{name}}은(는) 경험치 {{exp}}을(를) 얻었다!",
+      "levelUp": "{{name}}은(는) Lv.{{level}}(으)로 성장했다!",
+      "evolved": "{{from}}이(가) {{to}}(으)로 진화했다!"
     }
   },
   "list": {
