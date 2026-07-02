@@ -1,0 +1,74 @@
+name: Pokedex Client Release
+
+# Manually triggered so it never fires on ordinary pushes/tags (and never
+# collides with the repo's existing `*.*.*` tag-triggered workflows).
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+defaults:
+  run:
+    working-directory: pokedex-client
+
+jobs:
+  publish-tauri:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: macos-latest
+            args: '--target aarch64-apple-darwin'
+          - platform: macos-latest
+            args: '--target x86_64-apple-darwin'
+          - platform: windows-latest
+            args: ''
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+          cache-dependency-path: pokedex-client/package-lock.json
+
+      - name: Read app version
+        id: version
+        shell: bash
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=pokedex-client-v${VERSION//./-}" >> "$GITHUB_OUTPUT"
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: pokedex-client/src-tauri -> target
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build and publish
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          projectPath: pokedex-client
+          tagName: ${{ steps.version.outputs.tag }}
+          releaseName: 'Pokedex Client v${{ steps.version.outputs.version }}'
+          releaseBody: |
+            Pokedex desktop client v${{ steps.version.outputs.version }} (macOS + Windows builds).
+            Unsigned build — macOS will show an "unidentified developer" warning
+            (right-click the app → Open) and Windows SmartScreen may warn on first run.
+          releaseDraft: true
+          prerelease: false
+          args: ${{ matrix.args }}
