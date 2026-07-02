@@ -148,3 +148,8 @@ export interface PokemonTypeDetail {
   name: string;
   pokemon: { slot: number; pokemon: NamedAPIResource }[];
 }
+
+export interface LocalizedNamesResource {
+  name: string;
+  names: { name: string; language: NamedAPIResource }[];
+}

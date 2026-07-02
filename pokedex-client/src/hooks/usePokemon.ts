@@ -1,8 +1,10 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQueries, useQuery } from "@tanstack/react-query";
 import {
+  getAbilityDetail,
   getAllPokemonIndex,
   getAllTypes,
   getEvolutionChain,
+  getMoveDetail,
   getPokemonByName,
   getPokemonSpecies,
   getTypeDetail,
@@ -57,5 +59,25 @@ export function useEvolutionChain(url: string | null) {
     queryFn: () => getEvolutionChain(url as string),
     enabled: !!url,
     staleTime: Infinity,
+  });
+}
+
+export function useAbilityDetail(name: string | null) {
+  return useQuery({
+    queryKey: ["ability", name],
+    queryFn: () => getAbilityDetail(name as string),
+    enabled: !!name,
+    staleTime: Infinity,
+  });
+}
+
+/** Fetches localized names for a set of moves, one request per move, all cached indefinitely. */
+export function useMoveDetails(names: string[]) {
+  return useQueries({
+    queries: names.map((name) => ({
+      queryKey: ["move", name],
+      queryFn: () => getMoveDetail(name),
+      staleTime: Infinity,
+    })),
   });
 }
