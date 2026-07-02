@@ -1,16 +1,24 @@
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { idFromUrl, officialArtworkUrl } from "../api/client";
-import { usePokemonDetail } from "../hooks/usePokemon";
+import { localizedName } from "../api/textUtils";
+import { usePokemonDetail, usePokemonSpecies } from "../hooks/usePokemon";
 import { TypeBadge } from "./TypeBadge";
 
 export function PokemonCard({ name, url }: { name: string; url: string }) {
+  const { i18n } = useTranslation();
   const id = idFromUrl(url);
   const { data, isLoading } = usePokemonDetail(name);
+  const { data: species } = usePokemonSpecies(name);
 
   const artwork =
     data?.sprites.other?.["official-artwork"]?.front_default ??
     data?.sprites.front_default ??
     officialArtworkUrl(id);
+
+  const displayName = species
+    ? localizedName(species.names, i18n.resolvedLanguage ?? "en", name)
+    : name.replace(/-/g, " ");
 
   return (
     <Link to={`/pokemon/${name}`} className="pokemon-card">
@@ -21,7 +29,7 @@ export function PokemonCard({ name, url }: { name: string; url: string }) {
         loading="lazy"
         className="pokemon-card-sprite"
       />
-      <span className="pokemon-card-name">{name.replace(/-/g, " ")}</span>
+      <span className="pokemon-card-name">{displayName}</span>
       <span className="pokemon-card-types">
         {isLoading && <span className="skeleton-badge" />}
         {data?.types.map((t) => (

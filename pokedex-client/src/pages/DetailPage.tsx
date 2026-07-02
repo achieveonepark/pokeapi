@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router-dom";
 import { EvolutionChain } from "../components/EvolutionChain";
 import { MovesList } from "../components/MovesList";
@@ -9,10 +10,12 @@ import {
   usePokemonDetail,
   usePokemonSpecies,
 } from "../hooks/usePokemon";
-import { englishFlavorText, englishGenus } from "../api/textUtils";
+import { localizedFlavorText, localizedGenus, localizedName } from "../api/textUtils";
 
 export function DetailPage() {
   const { name } = useParams<{ name: string }>();
+  const { t, i18n } = useTranslation();
+  const lang = i18n.resolvedLanguage ?? "en";
   const [showShiny, setShowShiny] = useState(false);
 
   const { data: pokemon, isLoading, error } = usePokemonDetail(name ?? null);
@@ -21,12 +24,11 @@ export function DetailPage() {
     species?.evolution_chain.url ?? null,
   );
 
-  if (isLoading) return <div className="center-message">Loading…</div>;
+  if (isLoading) return <div className="center-message">{t("common.loading")}</div>;
   if (error || !pokemon)
     return (
       <div className="center-message error">
-        Couldn't load that Pokemon.{" "}
-        <Link to="/">Back to list</Link>
+        {t("detail.notFound")} <Link to="/">{t("detail.backToList")}</Link>
       </div>
     );
 
@@ -36,35 +38,38 @@ export function DetailPage() {
     : pokemon.sprites.other?.["official-artwork"]?.front_default ??
       pokemon.sprites.front_default;
 
-  const flavorText = species ? englishFlavorText(species.flavor_text_entries) : null;
-  const genus = species ? englishGenus(species.genera) : null;
+  const flavorText = species ? localizedFlavorText(species.flavor_text_entries, lang) : null;
+  const genus = species ? localizedGenus(species.genera, lang) : null;
+  const displayName = species
+    ? localizedName(species.names, lang, pokemon.name)
+    : pokemon.name.replace(/-/g, " ");
 
   return (
     <div className="detail-page">
       <Link to="/" className="back-link">
-        ‹ Back to Pokedex
+        {t("detail.backLink")}
       </Link>
 
       <header className="detail-header">
         <div className="detail-artwork-wrap">
           <img src={artwork ?? undefined} alt={pokemon.name} className="detail-artwork" />
           <button className="shiny-toggle" onClick={() => setShowShiny((s) => !s)}>
-            {showShiny ? "★ Shiny" : "☆ Normal"}
+            {showShiny ? t("detail.shiny") : t("detail.normal")}
           </button>
         </div>
         <div className="detail-heading">
           <span className="detail-id">#{String(pokemon.id).padStart(4, "0")}</span>
-          <h1>{pokemon.name.replace(/-/g, " ")}</h1>
+          <h1>{displayName}</h1>
           {genus && <p className="detail-genus">{genus}</p>}
           <div className="detail-types">
-            {pokemon.types.map((t) => (
-              <TypeBadge key={t.type.name} name={t.type.name} />
+            {pokemon.types.map((pt) => (
+              <TypeBadge key={pt.type.name} name={pt.type.name} />
             ))}
           </div>
           <div className="detail-tags">
-            {species?.is_legendary && <span className="tag legendary">Legendary</span>}
-            {species?.is_mythical && <span className="tag mythical">Mythical</span>}
-            {species?.is_baby && <span className="tag baby">Baby</span>}
+            {species?.is_legendary && <span className="tag legendary">{t("detail.legendary")}</span>}
+            {species?.is_mythical && <span className="tag mythical">{t("detail.mythical")}</span>}
+            {species?.is_baby && <span className="tag baby">{t("detail.baby")}</span>}
           </div>
           {flavorText && <p className="flavor-text">{flavorText}</p>}
         </div>
@@ -72,65 +77,79 @@ export function DetailPage() {
 
       <section className="detail-grid">
         <div className="panel">
-          <h2>Physical</h2>
+          <h2>{t("detail.panels.physical")}</h2>
           <dl className="stat-list">
-            <dt>Height</dt>
+            <dt>{t("detail.fields.height")}</dt>
             <dd>{(pokemon.height / 10).toFixed(1)} m</dd>
-            <dt>Weight</dt>
+            <dt>{t("detail.fields.weight")}</dt>
             <dd>{(pokemon.weight / 10).toFixed(1)} kg</dd>
-            <dt>Base Experience</dt>
+            <dt>{t("detail.fields.baseExperience")}</dt>
             <dd>{pokemon.base_experience ?? "—"}</dd>
             {species && (
               <>
-                <dt>Shape</dt>
-                <dd>{species.shape?.name ?? "—"}</dd>
-                <dt>Color</dt>
-                <dd>{species.color.name}</dd>
-                <dt>Habitat</dt>
-                <dd>{species.habitat?.name ?? "—"}</dd>
+                <dt>{t("detail.fields.shape")}</dt>
+                <dd>
+                  {species.shape
+                    ? t(`shape.${species.shape.name}`, { defaultValue: species.shape.name })
+                    : "—"}
+                </dd>
+                <dt>{t("detail.fields.color")}</dt>
+                <dd>{t(`color.${species.color.name}`, { defaultValue: species.color.name })}</dd>
+                <dt>{t("detail.fields.habitat")}</dt>
+                <dd>
+                  {species.habitat
+                    ? t(`habitat.${species.habitat.name}`, { defaultValue: species.habitat.name })
+                    : "—"}
+                </dd>
               </>
             )}
           </dl>
         </div>
 
         <div className="panel">
-          <h2>Abilities</h2>
+          <h2>{t("detail.panels.abilities")}</h2>
           <ul className="abilities-list">
             {pokemon.abilities.map((a) => (
               <li key={a.ability.name}>
                 {a.ability.name.replace(/-/g, " ")}
-                {a.is_hidden && <span className="hidden-tag">hidden</span>}
+                {a.is_hidden && <span className="hidden-tag">{t("detail.hidden")}</span>}
               </li>
             ))}
           </ul>
 
           {species && (
             <>
-              <h2>Breeding &amp; Training</h2>
+              <h2>{t("detail.panels.breeding")}</h2>
               <dl className="stat-list">
-                <dt>Capture Rate</dt>
+                <dt>{t("detail.fields.captureRate")}</dt>
                 <dd>{species.capture_rate} / 255</dd>
-                <dt>Base Happiness</dt>
+                <dt>{t("detail.fields.baseHappiness")}</dt>
                 <dd>{species.base_happiness}</dd>
-                <dt>Growth Rate</dt>
-                <dd>{species.growth_rate.name.replace(/-/g, " ")}</dd>
-                <dt>Egg Groups</dt>
+                <dt>{t("detail.fields.growthRate")}</dt>
+                <dd>
+                  {t(`growthRate.${species.growth_rate.name}`, {
+                    defaultValue: species.growth_rate.name,
+                  })}
+                </dd>
+                <dt>{t("detail.fields.eggGroups")}</dt>
                 <dd>
                   {species.egg_groups.length
-                    ? species.egg_groups.map((g) => g.name).join(", ")
+                    ? species.egg_groups
+                        .map((g) => t(`eggGroup.${g.name}`, { defaultValue: g.name }))
+                        .join(", ")
                     : "—"}
                 </dd>
-                <dt>Hatch Steps</dt>
+                <dt>{t("detail.fields.hatchSteps")}</dt>
                 <dd>{(species.hatch_counter + 1) * 255}</dd>
-                <dt>Gender Ratio</dt>
+                <dt>{t("detail.fields.genderRatio")}</dt>
                 <dd>
                   {species.gender_rate < 0
-                    ? "Genderless"
+                    ? t("detail.genderless")
                     : `♀ ${(species.gender_rate / 8) * 100}% / ♂ ${
                         100 - (species.gender_rate / 8) * 100
                       }%`}
                 </dd>
-                <dt>Generation</dt>
+                <dt>{t("detail.fields.generation")}</dt>
                 <dd>{species.generation.name.replace("generation-", "").toUpperCase()}</dd>
               </dl>
             </>
@@ -138,7 +157,7 @@ export function DetailPage() {
         </div>
 
         <div className="panel">
-          <h2>Base Stats</h2>
+          <h2>{t("detail.panels.baseStats")}</h2>
           {pokemon.stats.map((s) => (
             <StatBar key={s.stat.name} statName={s.stat.name} value={s.base_stat} />
           ))}
@@ -151,14 +170,14 @@ export function DetailPage() {
 
       {evoChain && (
         <section className="panel">
-          <h2>Evolution Chain</h2>
+          <h2>{t("detail.panels.evolutionChain")}</h2>
           <EvolutionChain chain={evoChain.chain} />
         </section>
       )}
 
       {species && species.varieties.length > 1 && (
         <section className="panel">
-          <h2>Forms</h2>
+          <h2>{t("detail.panels.forms")}</h2>
           <div className="varieties-list">
             {species.varieties.map((v) => (
               <Link
@@ -174,13 +193,13 @@ export function DetailPage() {
       )}
 
       <section className="panel">
-        <h2>Moves</h2>
+        <h2>{t("detail.panels.moves")}</h2>
         <MovesList moves={pokemon.moves} />
       </section>
 
       {pokemon.cries?.latest && (
         <section className="panel">
-          <h2>Cry</h2>
+          <h2>{t("detail.panels.cry")}</h2>
           <audio controls src={pokemon.cries.latest} />
         </section>
       )}

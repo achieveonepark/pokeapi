@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   groupMovesByMethod,
   movesForVersionGroup,
@@ -6,14 +7,8 @@ import {
 } from "../api/moves";
 import type { PokemonMove } from "../api/types";
 
-const METHOD_LABELS: Record<string, string> = {
-  "level-up": "Level Up",
-  machine: "TM / HM",
-  egg: "Egg Moves",
-  tutor: "Move Tutor",
-};
-
 export function MovesList({ moves }: { moves: PokemonMove[] }) {
+  const { t } = useTranslation();
   const versionGroup = useMemo(() => pickLatestVersionGroup(moves), [moves]);
   const grouped = useMemo(() => {
     if (!versionGroup) return new Map();
@@ -25,7 +20,7 @@ export function MovesList({ moves }: { moves: PokemonMove[] }) {
   const active = activeMethod ?? methods[0] ?? null;
 
   if (!versionGroup || methods.length === 0) {
-    return <p className="empty-note">No move data available.</p>;
+    return <p className="empty-note">{t("moves.empty")}</p>;
   }
 
   return (
@@ -37,7 +32,7 @@ export function MovesList({ moves }: { moves: PokemonMove[] }) {
             className={`moves-tab ${method === active ? "active" : ""}`}
             onClick={() => setActiveMethod(method)}
           >
-            {METHOD_LABELS[method] ?? method} ({grouped.get(method)?.length})
+            {t(`moves.${method}`, { defaultValue: method })} ({grouped.get(method)?.length})
           </button>
         ))}
       </div>
@@ -46,13 +41,15 @@ export function MovesList({ moves }: { moves: PokemonMove[] }) {
           grouped.get(active)?.map((entry: { name: string; level: number }) => (
             <li key={entry.name} className="move-entry">
               {active === "level-up" && (
-                <span className="move-level">Lv {entry.level}</span>
+                <span className="move-level">{t("moves.level", { level: entry.level })}</span>
               )}
               <span className="move-name">{entry.name.replace(/-/g, " ")}</span>
             </li>
           ))}
       </ul>
-      <p className="version-group-note">Moveset shown for: {versionGroup.replace(/-/g, " ")}</p>
+      <p className="version-group-note">
+        {t("moves.versionNote", { version: versionGroup.replace(/-/g, " ") })}
+      </p>
     </div>
   );
 }

@@ -17,6 +17,12 @@ REST API — no backend server required.
   - Alternate forms/varieties
   - Move list grouped by learn method (level-up, TM/HM, egg, tutor)
   - Cry audio playback (where available)
+- English / Korean UI (language picker in the title bar, persisted locally).
+  Pokemon names, genus, and flavor text use PokeAPI's own per-language data;
+  types, stats, growth rate, egg groups, habitat, color, and shape are
+  translated client-side. Ability/move/item names stay in English (PokeAPI
+  slugs, not worth the extra per-item API calls to localize).
+- Custom Poké Ball app icon (`src-tauri/icons/`, sourced from `public/pokeball.svg`)
 
 ## Prerequisites (macOS)
 
