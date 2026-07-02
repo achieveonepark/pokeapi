@@ -1,16 +1,65 @@
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { getPokemonByName, getPokemonSpecies } from "../api/client";
+import { getEvolutionChain, getPokemonByName, getPokemonSpecies } from "../api/client";
+import { localizedName } from "../api/textUtils";
 import { buildFighter, resolveTurn } from "../battle/simulate";
 import type { BattleFighter, TurnResult } from "../battle/types";
+import { applyExp, expGainForVictory, rollWildLevel } from "../team/growth";
+import { findLevelEvolution } from "../team/evolution";
+import type { OwnedPokemon } from "../team/types";
+import type { useTeam } from "../team/useTeam";
 import { usePokemonIndex } from "./usePokemon";
 
-export type BattleStatus = "idle" | "loading" | "fighting" | "finished";
+export type BattleStatus = "idle" | "loading" | "fighting" | "result";
+export type BattleOutcome = "win" | "lose" | null;
 
 const TURN_DELAY_MS = 1100;
 
-export function useBattle() {
+async function fetchFighter(
+  queryClient: QueryClient,
+  key: "a" | "b",
+  name: string,
+  level: number,
+  lang: string,
+) {
+  const [pokemon, species] = await Promise.all([
+    queryClient.fetchQuery({
+      queryKey: ["pokemon", name],
+      queryFn: () => getPokemonByName(name),
+      staleTime: Infinity,
+    }),
+    queryClient.fetchQuery({
+      queryKey: ["species", name],
+      queryFn: () => getPokemonSpecies(name),
+      staleTime: Infinity,
+    }),
+  ]);
+  return buildFighter(key, pokemon, species, lang, level);
+}
+
+/** Walks the evolution chain forward as far as `level` allows (handles double-jumps). */
+async function resolveEvolutions(queryClient: QueryClient, slug: string, level: number): Promise<string> {
+  let current = slug;
+  for (let i = 0; i < 3; i++) {
+    const species = await queryClient.fetchQuery({
+      queryKey: ["species", current],
+      queryFn: () => getPokemonSpecies(current),
+      staleTime: Infinity,
+    });
+    const chain = await queryClient.fetchQuery({
+      queryKey: ["evolution-chain", species.evolution_chain.url],
+      queryFn: () => getEvolutionChain(species.evolution_chain.url),
+      staleTime: Infinity,
+    });
+    const next = findLevelEvolution(chain, current, level);
+    if (!next) break;
+    current = next;
+  }
+  return current;
+}
+
+export function useBattle(teamApi: ReturnType<typeof useTeam>) {
   const { t, i18n } = useTranslation();
   const lang = i18n.resolvedLanguage ?? "en";
   const queryClient = useQueryClient();
@@ -20,40 +69,32 @@ export function useBattle() {
   const [fighterA, setFighterA] = useState<BattleFighter | null>(null);
   const [fighterB, setFighterB] = useState<BattleFighter | null>(null);
   const [log, setLog] = useState<string[]>([]);
-  const [winner, setWinner] = useState<BattleFighter | null>(null);
+  const [outcome, setOutcome] = useState<BattleOutcome>(null);
+  const [capturePending, setCapturePending] = useState(false);
+  const [wildCatch, setWildCatch] = useState<OwnedPokemon | null>(null);
   const battleId = useRef(0);
+  const activeIndexRef = useRef<number>(0);
 
   const start = useCallback(async () => {
-    if (!index || index.results.length < 2) return;
+    const activeMon = teamApi.active;
+    if (!activeMon || !index || index.results.length < 1) return;
+    activeIndexRef.current = teamApi.activeIndex;
+
     const thisBattle = ++battleId.current;
     setStatus("loading");
     setLog([]);
-    setWinner(null);
+    setOutcome(null);
+    setCapturePending(false);
+    setWildCatch(null);
 
     const pool = index.results;
-    const pickA = pool[Math.floor(Math.random() * pool.length)];
-    let pickB = pool[Math.floor(Math.random() * pool.length)];
-    while (pickB.name === pickA.name) {
-      pickB = pool[Math.floor(Math.random() * pool.length)];
-    }
+    const wildPick = pool[Math.floor(Math.random() * pool.length)];
+    const wildLevel = rollWildLevel(activeMon.level);
 
-    const fetchFighter = async (key: "a" | "b", name: string) => {
-      const [pokemon, species] = await Promise.all([
-        queryClient.fetchQuery({
-          queryKey: ["pokemon", name],
-          queryFn: () => getPokemonByName(name),
-          staleTime: Infinity,
-        }),
-        queryClient.fetchQuery({
-          queryKey: ["species", name],
-          queryFn: () => getPokemonSpecies(name),
-          staleTime: Infinity,
-        }),
-      ]);
-      return buildFighter(key, pokemon, species, lang);
-    };
-
-    const [a, b] = await Promise.all([fetchFighter("a", pickA.name), fetchFighter("b", pickB.name)]);
+    const [a, b] = await Promise.all([
+      fetchFighter(queryClient, "a", activeMon.slug, activeMon.level, lang),
+      fetchFighter(queryClient, "b", wildPick.name, wildLevel, lang),
+    ]);
     if (battleId.current !== thisBattle) return;
 
     setFighterA(a);
@@ -62,7 +103,6 @@ export function useBattle() {
     setStatus("fighting");
 
     let current: [BattleFighter, BattleFighter] = a.speed >= b.speed ? [a, b] : [b, a];
-
     const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
     while (battleId.current === thisBattle) {
@@ -74,15 +114,7 @@ export function useBattle() {
       try {
         result = await resolveTurn(attacker, defender, lang, t);
       } catch {
-        result = {
-          message: t("battle.log.noDamage", {
-            attacker: attacker.displayName,
-            move: "?",
-          }),
-          attacker: attacker.key,
-          damage: 0,
-          fainted: false,
-        };
+        result = { message: t("battle.log.noDamage", { attacker: attacker.displayName, move: "?" }), attacker: attacker.key, damage: 0, fainted: false };
       }
       if (battleId.current !== thisBattle) return;
 
@@ -95,20 +127,64 @@ export function useBattle() {
       setLog((prev) => [...prev, result.message]);
 
       if (newDefenderHp <= 0) {
-        setLog((prev) => [
-          ...prev,
-          t("battle.log.fainted", { name: defender.displayName }),
-          t("battle.log.winner", { name: attacker.displayName }),
-        ]);
-        setWinner(attacker);
-        setStatus("finished");
+        const playerWon = defender.key === "b";
+        setLog((prev) => [...prev, t("battle.log.fainted", { name: defender.displayName })]);
+
+        if (playerWon) {
+          const gained = expGainForVictory(b.level);
+          const { level: newLevel, exp: newExp, leveledUp } = applyExp(activeMon.level, activeMon.exp, gained);
+          setLog((prev) => [...prev, t("battle.log.expGained", { name: a.displayName, exp: gained })]);
+
+          let finalSlug = activeMon.slug;
+          if (leveledUp) {
+            setLog((prev) => [...prev, t("battle.log.levelUp", { name: a.displayName, level: newLevel })]);
+            finalSlug = await resolveEvolutions(queryClient, activeMon.slug, newLevel);
+            if (battleId.current !== thisBattle) return;
+            if (finalSlug !== activeMon.slug) {
+              const evolvedSpecies = await queryClient.fetchQuery({
+                queryKey: ["species", finalSlug],
+                queryFn: () => getPokemonSpecies(finalSlug),
+                staleTime: Infinity,
+              });
+              const evolvedName = localizedName(evolvedSpecies.names, lang, finalSlug.replace(/-/g, " "));
+              setLog((prev) => [...prev, t("battle.log.evolved", { from: a.displayName, to: evolvedName })]);
+            }
+          }
+
+          teamApi.updateMember(activeIndexRef.current, { level: newLevel, exp: newExp, slug: finalSlug });
+          setOutcome("win");
+          setWildCatch({ slug: b.slug, level: b.level, exp: 0 });
+          setCapturePending(true);
+          setLog((prev) => [...prev, t("battle.log.winner", { name: a.displayName })]);
+        } else {
+          setOutcome("lose");
+          setLog((prev) => [...prev, t("battle.log.winner", { name: b.displayName })]);
+        }
+
+        setStatus("result");
         return;
       }
 
-      // Alternate turns: whoever just got hit swings back next.
       current = [updatedDefender, attacker];
     }
-  }, [index, lang, queryClient, t]);
+  }, [index, lang, queryClient, t, teamApi]);
 
-  return { status, fighterA, fighterB, log, winner, start };
+  const decideCapture = useCallback(
+    (accept: boolean, replaceIndex?: number) => {
+      if (accept && wildCatch) {
+        if (teamApi.isFull) {
+          if (replaceIndex !== undefined) {
+            teamApi.replaceMember(replaceIndex, wildCatch);
+          }
+        } else {
+          teamApi.addMember(wildCatch);
+        }
+      }
+      setCapturePending(false);
+      setWildCatch(null);
+    },
+    [teamApi, wildCatch],
+  );
+
+  return { status, fighterA, fighterB, log, outcome, capturePending, wildCatch, start, decideCapture };
 }

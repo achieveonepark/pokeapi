@@ -4,6 +4,7 @@ export interface BattleFighter {
   displayName: string;
   sprite: string;
   types: string[];
+  level: number;
   maxHp: number;
   hp: number;
   attack: number;

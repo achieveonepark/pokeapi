@@ -1,7 +1,12 @@
 import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
+import { CapturePrompt } from "../components/CapturePrompt";
+import { StarterPicker } from "../components/StarterPicker";
+import { TeamRoster } from "../components/TeamRoster";
 import { TypeBadge } from "../components/TypeBadge";
 import { useBattle } from "../hooks/useBattle";
+import { STARTER_LEVEL } from "../team/growth";
+import { useTeam } from "../team/useTeam";
 import type { BattleFighter } from "../battle/types";
 
 function FighterPanel({ fighter, mirrored }: { fighter: BattleFighter | null; mirrored?: boolean }) {
@@ -16,7 +21,7 @@ function FighterPanel({ fighter, mirrored }: { fighter: BattleFighter | null; mi
     <div className={`fighter-panel ${fainted ? "fainted" : ""}`}>
       <div className="fighter-info">
         <span className="fighter-name">{fighter.displayName}</span>
-        <span className="fighter-level">{t("battle.level", { level: 50 })}</span>
+        <span className="fighter-level">{t("battle.level", { level: fighter.level })}</span>
       </div>
       <div className="fighter-types">
         {fighter.types.map((typeName) => (
@@ -43,15 +48,38 @@ function FighterPanel({ fighter, mirrored }: { fighter: BattleFighter | null; mi
 
 export function BattlePage() {
   const { t } = useTranslation();
-  const { status, fighterA, fighterB, log, winner, start } = useBattle();
+  const teamApi = useTeam();
+  const { status, fighterA, fighterB, log, outcome, capturePending, start, decideCapture } = useBattle(teamApi);
   const logRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     logRef.current?.scrollTo({ top: logRef.current.scrollHeight });
   }, [log]);
 
+  if (teamApi.team.length === 0) {
+    return (
+      <div className="battle-page">
+        <StarterPicker
+          onPick={(name) => {
+            teamApi.addMember({ slug: name, level: STARTER_LEVEL, exp: 0 });
+            teamApi.setActiveIndex(0);
+          }}
+        />
+      </div>
+    );
+  }
+
+  const busy = status === "loading" || status === "fighting" || capturePending;
+
   return (
     <div className="battle-page">
+      <TeamRoster
+        team={teamApi.team}
+        activeIndex={teamApi.activeIndex}
+        onSelect={teamApi.setActiveIndex}
+        disabled={busy}
+      />
+
       <div className="battle-arena">
         <FighterPanel fighter={fighterB} mirrored />
         <span className="battle-vs">VS</span>
@@ -67,22 +95,31 @@ export function BattlePage() {
         ))}
       </div>
 
-      <div className="battle-controls">
-        <button
-          className="battle-start-button"
-          disabled={status === "loading" || status === "fighting"}
-          onClick={start}
-        >
-          {status === "loading"
-            ? t("battle.loading")
-            : status === "finished"
-              ? t("battle.restart")
-              : t("battle.start")}
-        </button>
-        {winner && (
-          <span className="battle-winner-banner">{t("battle.log.winner", { name: winner.displayName })}</span>
-        )}
-      </div>
+      {capturePending && fighterB && (
+        <CapturePrompt
+          wildDisplayName={fighterB.displayName}
+          team={teamApi.team}
+          isFull={teamApi.isFull}
+          onDecide={decideCapture}
+        />
+      )}
+
+      {!capturePending && (
+        <div className="battle-controls">
+          <button className="battle-start-button" disabled={busy} onClick={start}>
+            {status === "loading"
+              ? t("battle.loading")
+              : status === "result"
+                ? t("battle.restart")
+                : t("battle.start")}
+          </button>
+          {status === "result" && outcome && (
+            <span className={`battle-winner-banner ${outcome === "lose" ? "lose" : ""}`}>
+              {outcome === "win" ? t("battle.outcomeWin") : t("battle.outcomeLose")}
+            </span>
+          )}
+        </div>
+      )}
     </div>
   );
 }

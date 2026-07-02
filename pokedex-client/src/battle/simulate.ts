@@ -3,24 +3,16 @@ import { getMoveDetail } from "../api/client";
 import { pickLatestVersionGroup } from "../api/moves";
 import { localizedName } from "../api/textUtils";
 import type { Pokemon, PokemonSpecies } from "../api/types";
+import { hpAtLevel, statAtLevel } from "../team/growth";
 import { typeEffectiveness } from "./typeChart";
 import type { BattleFighter, TurnResult } from "./types";
-
-const LEVEL = 50;
-
-function hpAtLevel50(base: number): number {
-  return Math.floor(((2 * base + 31) * LEVEL) / 100) + LEVEL + 10;
-}
-
-function statAtLevel50(base: number): number {
-  return Math.floor(((2 * base + 31) * LEVEL) / 100) + 5;
-}
 
 export function buildFighter(
   key: "a" | "b",
   pokemon: Pokemon,
   species: PokemonSpecies | undefined,
   lang: string,
+  level: number,
 ): BattleFighter {
   const statValue = (name: string) => pokemon.stats.find((s) => s.stat.name === name)?.base_stat ?? 50;
   const versionGroup = pickLatestVersionGroup(pokemon.moves);
@@ -28,7 +20,10 @@ export function buildFighter(
     ? pokemon.moves
         .filter((m) =>
           m.version_group_details.some(
-            (d) => d.version_group.name === versionGroup && d.move_learn_method.name === "level-up",
+            (d) =>
+              d.version_group.name === versionGroup &&
+              d.move_learn_method.name === "level-up" &&
+              d.level_learned_at <= level,
           ),
         )
         .map((m) => m.move.name)
@@ -39,7 +34,7 @@ export function buildFighter(
     ? localizedName(species.names, lang, pokemon.name)
     : pokemon.name.replace(/-/g, " ");
 
-  const maxHp = hpAtLevel50(statValue("hp"));
+  const maxHp = hpAtLevel(statValue("hp"), level);
 
   return {
     key,
@@ -48,13 +43,14 @@ export function buildFighter(
     sprite:
       pokemon.sprites.other?.["official-artwork"]?.front_default ?? pokemon.sprites.front_default ?? "",
     types: pokemon.types.map((t) => t.type.name),
+    level,
     maxHp,
     hp: maxHp,
-    attack: statAtLevel50(statValue("attack")),
-    defense: statAtLevel50(statValue("defense")),
-    specialAttack: statAtLevel50(statValue("special-attack")),
-    specialDefense: statAtLevel50(statValue("special-defense")),
-    speed: statAtLevel50(statValue("speed")),
+    attack: statAtLevel(statValue("attack"), level),
+    defense: statAtLevel(statValue("defense"), level),
+    specialAttack: statAtLevel(statValue("special-attack"), level),
+    specialDefense: statAtLevel(statValue("special-defense"), level),
+    speed: statAtLevel(statValue("speed"), level),
     movePool: movePool.length > 0 ? movePool : ["tackle"],
   };
 }
@@ -94,7 +90,7 @@ export async function resolveTurn(
   const atk = isPhysical ? attacker.attack : attacker.specialAttack;
   const def = isPhysical ? defender.defense : defender.specialDefense;
 
-  const base = ((2 * LEVEL) / 5 + 2) * power * (atk / def) / 50 + 2;
+  const base = ((2 * attacker.level) / 5 + 2) * power * (atk / def) / 50 + 2;
   const effectiveness = typeEffectiveness(moveType, defender.types);
   const isCrit = Math.random() < 1 / 16;
   const random = 0.85 + Math.random() * 0.15;
