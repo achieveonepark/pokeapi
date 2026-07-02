@@ -48,6 +48,29 @@ body {
   letter-spacing: 0.5px;
 }
 
+.app-title-group {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.app-nav {
+  display: flex;
+  gap: 14px;
+}
+
+.app-nav a {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.app-nav a:hover,
+.app-nav a.active {
+  color: var(--accent);
+}
+
 .language-select {
   background: var(--panel-alt);
   border: 1px solid var(--border);
@@ -554,4 +577,167 @@ body {
   font-size: 12px;
   margin: 10px 0 0;
   text-transform: capitalize;
+}
+
+/* Battle page */
+.battle-page {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 720px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.battle-arena {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+
+.battle-vs {
+  font-weight: 800;
+  font-size: 18px;
+  color: var(--text-muted);
+}
+
+.fighter-panel {
+  flex: 1;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-height: 260px;
+  transition: opacity 0.3s ease, filter 0.3s ease;
+}
+
+.fighter-placeholder {
+  background: var(--panel-alt);
+  opacity: 0.4;
+}
+
+.fighter-panel.fainted {
+  opacity: 0.5;
+  filter: grayscale(1);
+}
+
+.fighter-info {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.fighter-name {
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.fighter-level {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.fighter-types {
+  display: flex;
+  gap: 6px;
+}
+
+.hp-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  font-size: 12px;
+}
+
+.hp-label {
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.hp-bar-track {
+  flex: 1;
+  background: var(--panel-alt);
+  border-radius: 6px;
+  height: 8px;
+  overflow: hidden;
+}
+
+.hp-bar-fill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.6s ease, background-color 0.6s ease;
+}
+
+.hp-value {
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.fighter-sprite {
+  width: 128px;
+  height: 128px;
+  object-fit: contain;
+}
+
+.fighter-sprite.mirrored {
+  transform: scaleX(-1);
+}
+
+.battle-log {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 18px;
+  height: 180px;
+  overflow-y: auto;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.battle-log p {
+  margin: 0 0 6px;
+  color: var(--text-muted);
+}
+
+.battle-log p.battle-log-latest {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.battle-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.battle-start-button {
+  background: var(--accent);
+  border: none;
+  color: #14161c;
+  font-weight: 700;
+  padding: 10px 22px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.battle-start-button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.battle-winner-banner {
+  color: var(--accent);
+  font-weight: 700;
 }

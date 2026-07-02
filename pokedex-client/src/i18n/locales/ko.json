@@ -2,8 +2,30 @@
   "app": {
     "title": "포켓몬 도감"
   },
+  "nav": {
+    "pokedex": "도감",
+    "battle": "배틀"
+  },
   "common": {
     "loading": "불러오는 중…"
+  },
+  "battle": {
+    "idle": "랜덤으로 두 포켓몬을 뽑아 대결시켜 보세요.",
+    "start": "랜덤 대결 시작",
+    "restart": "다시 대결",
+    "loading": "포켓몬을 불러오는 중…",
+    "level": "Lv.{{level}}",
+    "log": {
+      "start": "{{a}}와(과) {{b}}의 대결이 시작됩니다!",
+      "hit": "{{attacker}}의 {{move}}! {{defender}}에게 {{damage}}의 데미지!",
+      "superEffective": "{{attacker}}의 {{move}}! 효과가 굉장했다! {{defender}}에게 {{damage}}의 데미지!",
+      "notVeryEffective": "{{attacker}}의 {{move}}! 효과가 별로인 듯하다... {{defender}}에게 {{damage}}의 데미지!",
+      "noEffect": "{{attacker}}의 {{move}}! {{defender}}에게 효과가 없는 것 같다!",
+      "critical": "{{attacker}}의 {{move}}! 급소에 맞았다! {{defender}}에게 {{damage}}의 데미지!",
+      "noDamage": "{{attacker}}의 {{move}}!",
+      "fainted": "{{name}}은(는) 쓰러졌다!",
+      "winner": "{{name}} 승리!"
+    }
   },
   "list": {
     "loadingPokedex": "도감을 불러오는 중…",
