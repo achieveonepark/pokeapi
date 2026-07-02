@@ -46,7 +46,21 @@ This opens a native window with hot reload. Requires internet access
 npm run tauri build
 ```
 
-The signed `.app` / `.dmg` will be under `src-tauri/target/release/bundle/`.
+The unsigned `.app` / `.dmg` will be under `src-tauri/target/release/bundle/`.
+
+## Downloading a prebuilt release
+
+Prebuilt macOS (`.dmg`, `.app`) and Windows (`.msi`, `.exe`) builds are
+published to the repo's [Releases](../../releases) page by the
+**Pokedex Client Release** GitHub Actions workflow. It's manually triggered
+(Actions tab → "Pokedex Client Release" → "Run workflow") rather than firing
+on every push, so it doesn't collide with this repo's other tag-triggered
+release/publish workflows.
+
+Builds are unsigned: macOS will show an "unidentified developer" warning
+(right-click the app → Open to bypass), and Windows SmartScreen may warn on
+first run. Code signing isn't configured — it requires paid Apple/Windows
+developer certificates.
 
 ## Project structure
 
