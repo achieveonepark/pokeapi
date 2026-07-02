@@ -24,6 +24,13 @@ REST API — no backend server required.
   color, and shape are translated client-side. Held item names inside
   evolution conditions stay in English (low-traffic edge case).
 - Custom Poké Ball app icon (`src-tauri/icons/`, sourced from `public/pokeball.svg`)
+- **Battle** tab: picks two random Pokemon and plays out a lightweight
+  auto-battle — real base stats (scaled to level 50) and a full 18-type
+  effectiveness chart, but a random move from each Pokemon's own level-up
+  moveset each turn (fetched from PokeAPI for real power/type/damage class)
+  rather than a real 4-move loadout or accuracy/status effects. It's meant to
+  capture the "watching two Pokemon fight" feeling, not be a rules-accurate
+  battle engine.
 
 ## Prerequisites (macOS)
 

@@ -153,3 +153,10 @@ export interface LocalizedNamesResource {
   name: string;
   names: { name: string; language: NamedAPIResource }[];
 }
+
+export interface MoveDetail extends LocalizedNamesResource {
+  power: number | null;
+  accuracy: number | null;
+  type: NamedAPIResource;
+  damage_class: NamedAPIResource;
+}

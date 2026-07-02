@@ -2,8 +2,30 @@
   "app": {
     "title": "Pokedex"
   },
+  "nav": {
+    "pokedex": "Pokedex",
+    "battle": "Battle"
+  },
   "common": {
     "loading": "Loading…"
+  },
+  "battle": {
+    "idle": "Pick two random Pokemon and watch them battle.",
+    "start": "Start Random Battle",
+    "restart": "Battle Again",
+    "loading": "Loading Pokemon…",
+    "level": "Lv.{{level}}",
+    "log": {
+      "start": "{{a}} and {{b}} enter the battle!",
+      "hit": "{{attacker}} used {{move}}! {{defender}} took {{damage}} damage!",
+      "superEffective": "{{attacker}} used {{move}}! It's super effective! {{defender}} took {{damage}} damage!",
+      "notVeryEffective": "{{attacker}} used {{move}}! It's not very effective... {{defender}} took {{damage}} damage!",
+      "noEffect": "{{attacker}} used {{move}}! It had no effect on {{defender}}!",
+      "critical": "{{attacker}} used {{move}}! A critical hit! {{defender}} took {{damage}} damage!",
+      "noDamage": "{{attacker}} used {{move}}!",
+      "fainted": "{{name}} fainted!",
+      "winner": "{{name}} wins the battle!"
+    }
   },
   "list": {
     "loadingPokedex": "Loading Pokedex…",

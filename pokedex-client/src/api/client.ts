@@ -1,6 +1,7 @@
 import type {
   EvolutionChain,
   LocalizedNamesResource,
+  MoveDetail,
   Pokemon,
   PokemonListResponse,
   PokemonSpecies,
@@ -49,7 +50,7 @@ export function getAbilityDetail(name: string) {
 }
 
 export function getMoveDetail(name: string) {
-  return getJSON<LocalizedNamesResource>(`${BASE_URL}/move/${name}`);
+  return getJSON<MoveDetail>(`${BASE_URL}/move/${name}`);
 }
 
 export function idFromUrl(url: string): number {
