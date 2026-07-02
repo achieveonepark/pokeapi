@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router-dom";
+import { AbilityName } from "../components/AbilityName";
 import { EvolutionChain } from "../components/EvolutionChain";
 import { MovesList } from "../components/MovesList";
 import { StatBar } from "../components/StatBar";
@@ -111,7 +112,7 @@ export function DetailPage() {
           <ul className="abilities-list">
             {pokemon.abilities.map((a) => (
               <li key={a.ability.name}>
-                {a.ability.name.replace(/-/g, " ")}
+                <AbilityName name={a.ability.name} />
                 {a.is_hidden && <span className="hidden-tag">{t("detail.hidden")}</span>}
               </li>
             ))}
