@@ -112,6 +112,7 @@ export interface PokemonSpecies {
   evolution_chain: { url: string };
   flavor_text_entries: FlavorTextEntry[];
   genera: Genus[];
+  names: { name: string; language: NamedAPIResource }[];
   varieties: { is_default: boolean; pokemon: NamedAPIResource }[];
 }
 
