@@ -103,6 +103,7 @@ function FighterPanel({
             dexId={fighter.dexId}
             anim={animName}
             scale={3}
+            maxSize={110}
             mirrored={mirrored}
             className={shakeClass}
             onUnavailable={() => setPmdAvailable(false)}

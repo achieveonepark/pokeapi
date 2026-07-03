@@ -30,7 +30,7 @@ export function PixelSpritePanel({ dexId }: { dexId: number }) {
           />
         )}
         <div className="pixel-sprite-stage">
-          <PmdSprite dexId={dexId} anim={anim} scale={4} />
+          <PmdSprite dexId={dexId} anim={anim} scale={4} maxSize={140} />
         </div>
       </div>
       <div className="pixel-anim-tabs">
