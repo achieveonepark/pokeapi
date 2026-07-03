@@ -72,11 +72,13 @@
       "abilities": "Abilities",
       "breeding": "Breeding & Training",
       "baseStats": "Base Stats",
+      "pixelSprite": "Pixel Sprite",
       "evolutionChain": "Evolution Chain",
       "forms": "Forms",
       "moves": "Moves",
       "cry": "Cry"
     },
+    "pixelSpriteCredit": "Sprite:",
     "fields": {
       "height": "Height",
       "weight": "Weight",
@@ -110,6 +112,14 @@
     "empty": "No move data available.",
     "versionNote": "Moveset shown for: {{version}}",
     "level": "Lv {{level}}"
+  },
+  "pmdAnim": {
+    "Idle": "Idle",
+    "Walk": "Walk",
+    "Attack": "Attack",
+    "Hurt": "Hurt",
+    "Sleep": "Sleep",
+    "Faint": "Faint"
   },
   "evolution": {
     "levelUp": "Level up",

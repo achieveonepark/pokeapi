@@ -55,6 +55,16 @@ REST API — no backend server required.
     crits/super-effective hits), a floating damage number pops up in
     red (gold for crits), and a colored flash + "Super Effective!" / "Not
     Very Effective..." label appear over the sprite for a beat.
+  - Fighters render as animated Mystery Dungeon-style pixel sprites (Idle,
+    a brief Attack pose on your turn, Hurt on taking damage, Faint at 0 HP)
+    from [PMDCollab/SpriteCollab](https://github.com/PMDCollab/SpriteCollab)
+    — CC BY-NC 4.0, credited in the pixel sprite detail panel and pulled
+    live at runtime (nothing bundled). Coverage isn't 100%; a species with
+    no SpriteCollab data falls back to its official artwork automatically.
+- Detail page **Pixel Sprite** panel: the same SpriteCollab data — a static
+  portrait plus buttons to preview whichever animations exist for that
+  species (Idle/Walk/Attack/Hurt/Sleep/Faint), with credit and a link to the
+  source repo. Hidden entirely for species without SpriteCollab coverage.
 
 ## Prerequisites (macOS)
 
@@ -139,6 +149,7 @@ src/
   hooks/        React Query hooks wrapping the API client, plus useBattle (battle orchestration)
   team/         Team persistence (localStorage), growth/EXP curve, level-evolution lookup
   battle/       Battle simulation engine (fighter stats, turn resolution, type chart)
+  pmd/          SpriteCollab client: URLs, AnimData.xml parsing, animation frame data
   components/   Reusable UI pieces (cards, badges, stat bars, evolution chain, moves, team/battle UI)
   pages/        ListPage, DetailPage, BattlePage
   i18n/         en/ko locale files and i18next setup

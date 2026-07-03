@@ -730,6 +730,8 @@ body {
   align-items: center;
   justify-content: center;
   isolation: isolate;
+  min-width: 130px;
+  min-height: 130px;
 }
 
 .fighter-sprite-flip {
@@ -745,6 +747,83 @@ body {
   height: 128px;
   object-fit: contain;
   display: block;
+}
+
+.pmd-sprite-flip {
+  display: inline-block;
+}
+
+.pmd-sprite-flip.mirrored {
+  transform: scaleX(-1);
+}
+
+.pmd-sprite {
+  display: block;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+}
+
+.pmd-portrait {
+  width: 96px;
+  height: 96px;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  background: var(--panel-alt);
+  border-radius: 10px;
+}
+
+.pixel-sprite-body {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.pixel-sprite-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 140px;
+  min-width: 140px;
+  background: var(--panel-alt);
+  border-radius: 10px;
+}
+
+.pixel-anim-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.pixel-anim-tab {
+  background: var(--panel-alt);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.pixel-anim-tab.active {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.pixel-sprite-credit {
+  margin: 12px 0 0;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.pixel-sprite-credit a {
+  color: var(--text-muted);
+}
+
+.pixel-sprite-credit a:hover {
+  color: var(--accent);
 }
 
 @keyframes hit-shake {

@@ -4,6 +4,7 @@ import { Link, useParams } from "react-router-dom";
 import { AbilityName } from "../components/AbilityName";
 import { EvolutionChain } from "../components/EvolutionChain";
 import { MovesList } from "../components/MovesList";
+import { PixelSpritePanel } from "../components/PixelSpritePanel";
 import { StatBar } from "../components/StatBar";
 import { TypeBadge } from "../components/TypeBadge";
 import {
@@ -168,6 +169,8 @@ export function DetailPage() {
           />
         </div>
       </section>
+
+      <PixelSpritePanel dexId={pokemon.id} />
 
       {evoChain && (
         <section className="panel">

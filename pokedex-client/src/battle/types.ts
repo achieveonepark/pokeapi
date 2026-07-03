@@ -1,6 +1,7 @@
 export interface BattleFighter {
   key: "a" | "b";
   slug: string;
+  dexId: number;
   displayName: string;
   sprite: string;
   types: string[];

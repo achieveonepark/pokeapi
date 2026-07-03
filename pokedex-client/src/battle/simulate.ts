@@ -39,6 +39,7 @@ export function buildFighter(
   return {
     key,
     slug: pokemon.name,
+    dexId: pokemon.id,
     displayName,
     sprite:
       pokemon.sprites.other?.["official-artwork"]?.front_default ?? pokemon.sprites.front_default ?? "",

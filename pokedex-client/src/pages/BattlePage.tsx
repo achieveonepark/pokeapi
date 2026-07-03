@@ -1,6 +1,7 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CapturePrompt } from "../components/CapturePrompt";
+import { PmdSprite, type PmdAnimName } from "../components/PmdSprite";
 import { StarterPicker } from "../components/StarterPicker";
 import { TeamRoster } from "../components/TeamRoster";
 import { TypeBadge } from "../components/TypeBadge";
@@ -9,6 +10,8 @@ import type { HitEvent } from "../hooks/useBattle";
 import { STARTER_LEVEL } from "../team/growth";
 import { useTeam } from "../team/useTeam";
 import type { BattleFighter } from "../battle/types";
+
+const POSE_HOLD_MS = 700;
 
 function FighterPanel({
   fighter,
@@ -20,16 +23,41 @@ function FighterPanel({
   hit: HitEvent | null;
 }) {
   const { t } = useTranslation();
+  const [poseAnim, setPoseAnim] = useState<PmdAnimName>("Idle");
+  const [pmdAvailable, setPmdAvailable] = useState(true);
+
+  useEffect(() => {
+    setPmdAvailable(true);
+  }, [fighter?.dexId]);
+
+  useEffect(() => {
+    if (!hit || !fighter) return undefined;
+    if (hit.attackerKey === fighter.key) {
+      setPoseAnim("Attack");
+    } else if (hit.defenderKey === fighter.key && hit.damage > 0) {
+      setPoseAnim("Hurt");
+    } else {
+      return undefined;
+    }
+    const timeout = window.setTimeout(() => setPoseAnim("Idle"), POSE_HOLD_MS);
+    return () => window.clearTimeout(timeout);
+  }, [hit, fighter]);
+
   if (!fighter) return <div className="fighter-panel fighter-placeholder" />;
 
   const pct = Math.max(0, Math.min(100, (fighter.hp / fighter.maxHp) * 100));
   const hpColor = pct > 50 ? "#4caf50" : pct > 20 ? "#ffb300" : "#e64a4a";
   const fainted = fighter.hp <= 0;
+  const animName: PmdAnimName = fainted ? "Faint" : poseAnim;
 
   const isTarget = hit?.defenderKey === fighter.key;
   const isAttacker = hit?.attackerKey === fighter.key;
-  const shakeClass = isTarget && hit && hit.damage > 0 ? (hit.isCrit || hit.effectiveness === "super" ? "hit-shake-strong" : "hit-shake") : "";
-  const attackClass = isAttacker ? "attack-pulse" : "";
+  const shakeClass =
+    isTarget && hit && hit.damage > 0
+      ? hit.isCrit || hit.effectiveness === "super"
+        ? "hit-shake-strong"
+        : "hit-shake"
+      : "";
 
   return (
     <div className={`fighter-panel ${fainted ? "fainted" : ""}`}>
@@ -70,14 +98,25 @@ function FighterPanel({
             {t("battle.notVeryEffectiveLabel")}
           </span>
         )}
-        <span className={`fighter-sprite-flip ${mirrored ? "mirrored" : ""}`}>
-          <img
-            key={isTarget && hit ? `shake-${hit.id}` : isAttacker && hit ? `attack-${hit.id}` : "static"}
-            src={fighter.sprite}
-            alt={fighter.displayName}
-            className={`fighter-sprite ${shakeClass} ${attackClass}`}
+        {pmdAvailable ? (
+          <PmdSprite
+            dexId={fighter.dexId}
+            anim={animName}
+            scale={3}
+            mirrored={mirrored}
+            className={shakeClass}
+            onUnavailable={() => setPmdAvailable(false)}
           />
-        </span>
+        ) : (
+          <span className={`fighter-sprite-flip ${mirrored ? "mirrored" : ""}`}>
+            <img
+              key={isTarget && hit ? `shake-${hit.id}` : isAttacker && hit ? `attack-${hit.id}` : "static"}
+              src={fighter.sprite}
+              alt={fighter.displayName}
+              className={`fighter-sprite ${shakeClass}`}
+            />
+          </span>
+        )}
       </div>
     </div>
   );
