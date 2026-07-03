@@ -32,6 +32,17 @@ body {
   height: 100vh;
 }
 
+.app-footer {
+  flex-shrink: 0;
+  padding: 8px 24px;
+  text-align: center;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+  background: var(--panel);
+}
+
 .app-title-bar {
   padding: 14px 24px;
   border-bottom: 1px solid var(--border);
