@@ -100,6 +100,37 @@ Builds are unsigned: macOS will show an "unidentified developer" warning
 first run. Code signing isn't configured — it requires paid Apple/Windows
 developer certificates.
 
+## Web deployment (GitHub Pages)
+
+This is the same React/Vite app underneath, so it also runs as a plain
+website — no Tauri/Rust build involved. `.github/workflows/pokedex-client-pages.yml`
+builds `pokedex-client` (with `VITE_BASE_PATH=/pokeapi/` so asset URLs resolve
+under that subpath — see `vite.config.ts`) and deploys it to GitHub Pages
+automatically on every push to `master` that touches `pokedex-client/**`.
+
+**One-time setup required** (I don't have permission to change repo
+settings): in this repo's **Settings → Pages**, set **Build and
+deployment → Source** to **GitHub Actions**. After that, the workflow above
+handles every future deploy on its own.
+
+Where it ends up depends on the GitHub Pages/custom-domain setup for this
+GitHub account: if `achieveonepark`'s `achieveonepark.github.io` user site
+already has `somiri.dev` configured as its custom domain, this project's
+Pages site is automatically served at `somiri.dev/pokeapi/` (GitHub's
+"project pages inherit the user site's custom domain" behavior); otherwise
+it'll be at `achieveonepark.github.io/pokeapi/` until that's set up.
+
+To build it locally for any other static host:
+
+```sh
+cd pokedex-client
+VITE_BASE_PATH=/pokeapi/ npm run build   # or VITE_BASE_PATH=/ for root hosting
+```
+
+`dist/` is the complete static site — upload it anywhere. Routing is
+hash-based (`/#/pokemon/pikachu`), so no server-side rewrite rules are
+needed for client-side routes to work.
+
 ## Project structure
 
 ```

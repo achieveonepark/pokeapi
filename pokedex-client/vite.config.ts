@@ -8,6 +8,12 @@ const host = process.env.TAURI_DEV_HOST;
 export default defineConfig(async () => ({
   plugins: [react()],
 
+  // For the Tauri desktop build (or root-hosted web deploys) this stays "/".
+  // The GitHub Pages workflow overrides it to "/pokeapi/" so built asset URLs
+  // resolve under that subpath.
+  // @ts-expect-error process is a nodejs global
+  base: process.env.VITE_BASE_PATH || "/",
+
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
   //
   // 1. prevent Vite from obscuring rust errors
