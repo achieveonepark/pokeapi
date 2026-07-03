@@ -874,21 +874,22 @@ body {
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 14px;
-  padding: 14px 18px;
-  height: 180px;
+  padding: 16px 20px;
+  height: 220px;
   overflow-y: auto;
-  font-size: 14px;
-  line-height: 1.6;
+  font-size: 18px;
+  line-height: 1.7;
 }
 
 .battle-log p {
-  margin: 0 0 6px;
-  color: var(--text-muted);
+  margin: 0 0 8px;
+  color: #c2c7d0;
 }
 
 .battle-log p.battle-log-latest {
   color: var(--text);
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 19px;
 }
 
 .battle-controls {
