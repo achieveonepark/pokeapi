@@ -1,13 +1,15 @@
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { PokemonCard } from "./PokemonCard";
-import { usePokemonIndex } from "../hooks/usePokemon";
+import { useSpeciesIndex } from "../hooks/usePokemon";
 
 const PAGE_SIZE = 24;
 
 export function StarterPicker({ onPick }: { onPick: (name: string) => void }) {
   const { t } = useTranslation();
-  const { data: index, isLoading, error } = usePokemonIndex();
+  // Species-only index (no mega/gmax/regional-form variants) so every
+  // starter choice is guaranteed to have matching species/evolution data.
+  const { data: index, isLoading, error } = useSpeciesIndex();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(0);
 

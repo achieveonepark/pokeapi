@@ -55,19 +55,45 @@ export function buildFighter(
   };
 }
 
+function shuffled<T>(items: T[]): T[] {
+  const copy = [...items];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
+/**
+ * Picks a random move, but tries a few distinct candidates in search of one
+ * with real power first — otherwise a Pokemon with mostly status moves in
+ * its early movepool (e.g. a starter that only knows Growl at Lv.5) reads as
+ * "does nothing but cry" turn after turn, which isn't much of a battle.
+ */
+async function pickDamagingMove(movePool: string[]): Promise<{ slug: string; data: Awaited<ReturnType<typeof getMoveDetail>> | null }> {
+  const candidates = shuffled(movePool).slice(0, Math.min(3, movePool.length));
+  let fallback: { slug: string; data: Awaited<ReturnType<typeof getMoveDetail>> | null } | null = null;
+
+  for (const slug of candidates) {
+    let data: Awaited<ReturnType<typeof getMoveDetail>> | null;
+    try {
+      data = await getMoveDetail(slug);
+    } catch {
+      data = null;
+    }
+    if (data?.power) return { slug, data };
+    if (!fallback) fallback = { slug, data };
+  }
+  return fallback ?? { slug: movePool[0], data: null };
+}
+
 export async function resolveTurn(
   attacker: BattleFighter,
   defender: BattleFighter,
   lang: string,
   t: TFunction,
 ): Promise<TurnResult> {
-  const moveSlug = attacker.movePool[Math.floor(Math.random() * attacker.movePool.length)];
-  let moveData;
-  try {
-    moveData = await getMoveDetail(moveSlug);
-  } catch {
-    moveData = null;
-  }
+  const { slug: moveSlug, data: moveData } = await pickDamagingMove(attacker.movePool);
 
   const moveName = moveData
     ? localizedName(moveData.names, lang, moveSlug.replace(/-/g, " "))

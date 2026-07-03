@@ -14,6 +14,7 @@
     "start": "Start Battle",
     "restart": "Battle Again",
     "loading": "Loading Pokemon…",
+    "loadError": "Couldn't load that matchup (bad data for one of the Pokemon). Try again — a different wild Pokemon will be picked.",
     "level": "Lv.{{level}}",
     "chooseStarter": "Choose your first Pokemon",
     "myTeam": "My Team",

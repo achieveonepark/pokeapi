@@ -25,7 +25,12 @@ REST API — no backend server required.
   evolution conditions stay in English (low-traffic edge case).
 - Custom Poké Ball app icon (`src-tauri/icons/`, sourced from `public/pokeball.svg`)
 - **Battle** tab — a small trainer progression game, not just a one-off fight:
-  - Pick any Pokemon as your starter (Lv.5) the first time you open the tab
+  - Pick any Pokemon as your starter (Lv.5) the first time you open the tab.
+    Both the starter picker and wild encounters draw from the
+    `/pokemon-species` list (base forms only), not the full `/pokemon` list
+    — that list also includes megas/gmax/regional-form variants whose name
+    doesn't match a `/pokemon-species/{name}` lookup, which used to make a
+    battle hang forever on "Loading Pokemon…" if one got picked
   - Your active team member fights a random wild Pokemon leveled around its
     own level; a win awards EXP (own hand-tuned curve, not an official
     growth-rate curve), which can level your Pokemon up
@@ -42,6 +47,10 @@ REST API — no backend server required.
     PokeAPI) — no accuracy rolls, status moves, or held items. It's meant to
     capture the "watching your Pokemon fight and grow" feeling, not be a
     rules-accurate battle engine.
+  - Each turn prefers a move with actual power over a status move (tries a
+    few random candidates from the movepool before falling back), so a
+    low-level Pokemon whose only learned move is something like Growl
+    doesn't spend every turn doing nothing
   - Hit feedback: the attacker pulses, the defender shakes (bigger shake on
     crits/super-effective hits), a floating damage number pops up in
     red (gold for crits), and a colored flash + "Super Effective!" / "Not
