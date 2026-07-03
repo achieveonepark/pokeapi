@@ -72,11 +72,13 @@
       "abilities": "특성",
       "breeding": "육성 정보",
       "baseStats": "종족값",
+      "pixelSprite": "픽셀 스프라이트",
       "evolutionChain": "진화 계보",
       "forms": "폼 / 변형",
       "moves": "기술",
       "cry": "울음소리"
     },
+    "pixelSpriteCredit": "스프라이트 출처:",
     "fields": {
       "height": "키",
       "weight": "몸무게",
@@ -110,6 +112,14 @@
     "empty": "기술 정보가 없습니다.",
     "versionNote": "표시된 버전: {{version}}",
     "level": "Lv {{level}}"
+  },
+  "pmdAnim": {
+    "Idle": "대기",
+    "Walk": "걷기",
+    "Attack": "공격",
+    "Hurt": "피격",
+    "Sleep": "수면",
+    "Faint": "기절"
   },
   "evolution": {
     "levelUp": "레벨업",
