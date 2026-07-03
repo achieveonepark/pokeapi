@@ -34,13 +34,37 @@ body {
 
 .app-footer {
   flex-shrink: 0;
-  padding: 8px 24px;
+  padding: 8px 24px 10px;
   text-align: center;
   font-size: 11px;
   line-height: 1.4;
   color: var(--text-muted);
   border-top: 1px solid var(--border);
   background: var(--panel);
+}
+
+.powered-by-pokeapi {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.powered-by-pokeapi:hover {
+  color: var(--accent);
+}
+
+.powered-by-pokeapi img {
+  height: 16px;
+  width: auto;
+}
+
+.app-disclaimer-text {
+  margin: 0;
 }
 
 .app-title-bar {

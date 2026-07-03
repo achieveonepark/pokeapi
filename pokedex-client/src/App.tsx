@@ -31,7 +31,18 @@ function App() {
           <Route path="/pokemon/:name" element={<DetailPage />} />
           <Route path="/battle" element={<BattlePage />} />
         </Routes>
-        <footer className="app-footer">{t("app.disclaimer")}</footer>
+        <footer className="app-footer">
+          <a
+            className="powered-by-pokeapi"
+            href="https://pokeapi.co"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <img src={`${import.meta.env.BASE_URL}pokeapi-logo.png`} alt="PokeAPI" />
+            <span>{t("app.poweredBy")}</span>
+          </a>
+          <p className="app-disclaimer-text">{t("app.disclaimer")}</p>
+        </footer>
       </div>
     </HashRouter>
   );
