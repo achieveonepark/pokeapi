@@ -2,10 +2,11 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { usePmdAnimData } from "../hooks/usePmdAnimData";
 import { dexIdToPmdId, pmdSpriteSheetUrl } from "../pmd/urls";
 
-// Sprite sheets are laid out as 8 direction-rows x N frame-columns; every
-// SpriteCollab sheet uses Down as row 0 (Down, DownRight, Right, UpRight,
-// Up, UpLeft, Left, DownLeft), which is what we show — a fixed front-facing pose.
-const DOWN_ROW = 0;
+// Sprite sheets are laid out as 8 direction-rows x N frame-columns, in a
+// fixed order: Down(0), DownRight(1), Right(2), UpRight(3), Up(4), UpLeft(5),
+// Left(6), DownLeft(7). We always show one fixed direction — DownLeft
+// (7-8 o'clock) reads better than straight-on Down for these battle/detail poses.
+const DISPLAY_ROW = 7;
 const DIRECTION_ROWS = 8;
 // PMD engines run animation ticks at roughly 30fps; not exact, but close
 // enough for this "rough feel" purpose.
@@ -28,6 +29,7 @@ export function PmdSprite({
   dexId,
   anim,
   scale = 3,
+  maxSize,
   mirrored = false,
   loop,
   onAnimEnd,
@@ -37,6 +39,9 @@ export function PmdSprite({
   dexId: number;
   anim: PmdAnimName;
   scale?: number;
+  /** Caps the rendered frame's width/height to this many px, scaling down as needed — keeps
+   *  wildly different frame sizes (a 40x48 Idle vs. an 80x88 Attack lunge) visually consistent. */
+  maxSize?: number;
   mirrored?: boolean;
   loop?: boolean;
   onAnimEnd?: () => void;
@@ -102,19 +107,22 @@ export function PmdSprite({
   const pmdId = dexIdToPmdId(dexId);
   const sheetUrl = pmdSpriteSheetUrl(pmdId, meta.sheetName);
   const cols = meta.durations.length;
-  const sheetWidth = meta.frameWidth * cols * scale;
-  const sheetHeight = meta.frameHeight * DIRECTION_ROWS * scale;
+  const effectiveScale = maxSize
+    ? Math.min(scale, maxSize / meta.frameWidth, maxSize / meta.frameHeight)
+    : scale;
+  const sheetWidth = meta.frameWidth * cols * effectiveScale;
+  const sheetHeight = meta.frameHeight * DIRECTION_ROWS * effectiveScale;
 
   return (
     <span className={`pmd-sprite-flip ${mirrored ? "mirrored" : ""} ${className ?? ""}`}>
       <span
         className="pmd-sprite"
         style={{
-          width: meta.frameWidth * scale,
-          height: meta.frameHeight * scale,
+          width: meta.frameWidth * effectiveScale,
+          height: meta.frameHeight * effectiveScale,
           backgroundImage: `url(${sheetUrl})`,
           backgroundSize: `${sheetWidth}px ${sheetHeight}px`,
-          backgroundPosition: `-${frame * meta.frameWidth * scale}px -${DOWN_ROW * meta.frameHeight * scale}px`,
+          backgroundPosition: `-${frame * meta.frameWidth * effectiveScale}px -${DISPLAY_ROW * meta.frameHeight * effectiveScale}px`,
         }}
       />
     </span>
