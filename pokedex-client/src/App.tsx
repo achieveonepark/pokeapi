@@ -31,6 +31,7 @@ function App() {
           <Route path="/pokemon/:name" element={<DetailPage />} />
           <Route path="/battle" element={<BattlePage />} />
         </Routes>
+        <footer className="app-footer">{t("app.disclaimer")}</footer>
       </div>
     </HashRouter>
   );

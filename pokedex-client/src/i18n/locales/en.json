@@ -1,6 +1,7 @@
 {
   "app": {
-    "title": "Pokedex"
+    "title": "Pokedex",
+    "disclaimer": "Unofficial fan project built on PokeAPI. Pokémon and Pokémon character names are trademarks of Nintendo, Game Freak, and Creatures Inc. Not affiliated with or endorsed by The Pokémon Company."
   },
   "nav": {
     "pokedex": "Pokedex",

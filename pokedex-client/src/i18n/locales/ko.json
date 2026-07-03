@@ -1,6 +1,7 @@
 {
   "app": {
-    "title": "포켓몬 도감"
+    "title": "포켓몬 도감",
+    "disclaimer": "이 사이트는 PokeAPI를 활용한 비공식 팬 프로젝트입니다. 포켓몬 및 포켓몬 캐릭터 이름은 Nintendo, Game Freak, Creatures Inc.의 상표입니다. The Pokémon Company와는 무관하며 공식 서비스가 아닙니다."
   },
   "nav": {
     "pokedex": "도감",
