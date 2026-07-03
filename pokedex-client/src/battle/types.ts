@@ -15,9 +15,13 @@ export interface BattleFighter {
   movePool: string[];
 }
 
+export type HitEffectiveness = "normal" | "super" | "not-very" | "none";
+
 export interface TurnResult {
   message: string;
   attacker: "a" | "b";
   damage: number;
   fainted: boolean;
+  effectiveness: HitEffectiveness;
+  isCrit: boolean;
 }

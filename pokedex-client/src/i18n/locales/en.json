@@ -23,6 +23,8 @@
     "teamFullPrompt": "Your team is full. Release a Pokemon to make room for {{name}}, or let it go.",
     "outcomeWin": "Victory!",
     "outcomeLose": "Defeat...",
+    "superEffectiveLabel": "Super Effective!",
+    "notVeryEffectiveLabel": "Not Very Effective...",
     "log": {
       "start": "{{a}} and {{b}} enter the battle!",
       "hit": "{{attacker}} used {{move}}! {{defender}} took {{damage}} damage!",

@@ -83,6 +83,8 @@ export async function resolveTurn(
       attacker: attacker.key,
       damage: 0,
       fainted: false,
+      effectiveness: "normal",
+      isCrit: false,
     };
   }
 
@@ -91,20 +93,25 @@ export async function resolveTurn(
   const def = isPhysical ? defender.defense : defender.specialDefense;
 
   const base = ((2 * attacker.level) / 5 + 2) * power * (atk / def) / 50 + 2;
-  const effectiveness = typeEffectiveness(moveType, defender.types);
+  const rawEffectiveness = typeEffectiveness(moveType, defender.types);
   const isCrit = Math.random() < 1 / 16;
   const random = 0.85 + Math.random() * 0.15;
   const damage =
-    effectiveness === 0 ? 0 : Math.max(1, Math.round(base * effectiveness * (isCrit ? 1.5 : 1) * random));
+    rawEffectiveness === 0
+      ? 0
+      : Math.max(1, Math.round(base * rawEffectiveness * (isCrit ? 1.5 : 1) * random));
 
   const fainted = damage >= defender.hp;
 
+  const effectiveness: TurnResult["effectiveness"] =
+    rawEffectiveness === 0 ? "none" : rawEffectiveness > 1 ? "super" : rawEffectiveness < 1 ? "not-very" : "normal";
+
   const messageKey =
-    effectiveness === 0
+    effectiveness === "none"
       ? "battle.log.noEffect"
-      : effectiveness > 1
+      : effectiveness === "super"
         ? "battle.log.superEffective"
-        : effectiveness < 1
+        : effectiveness === "not-very"
           ? "battle.log.notVeryEffective"
           : isCrit
             ? "battle.log.critical"
@@ -120,5 +127,7 @@ export async function resolveTurn(
     attacker: attacker.key,
     damage,
     fainted,
+    effectiveness,
+    isCrit,
   };
 }
