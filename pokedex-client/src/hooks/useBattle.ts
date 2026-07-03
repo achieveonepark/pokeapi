@@ -9,7 +9,7 @@ import { applyExp, expGainForVictory, rollWildLevel } from "../team/growth";
 import { findLevelEvolution } from "../team/evolution";
 import type { OwnedPokemon } from "../team/types";
 import type { useTeam } from "../team/useTeam";
-import { usePokemonIndex } from "./usePokemon";
+import { useSpeciesIndex } from "./usePokemon";
 
 export type BattleStatus = "idle" | "loading" | "fighting" | "result";
 export type BattleOutcome = "win" | "lose" | null;
@@ -72,7 +72,7 @@ export function useBattle(teamApi: ReturnType<typeof useTeam>) {
   const { t, i18n } = useTranslation();
   const lang = i18n.resolvedLanguage ?? "en";
   const queryClient = useQueryClient();
-  const { data: index } = usePokemonIndex();
+  const { data: index } = useSpeciesIndex();
 
   const [status, setStatus] = useState<BattleStatus>("idle");
   const [fighterA, setFighterA] = useState<BattleFighter | null>(null);
@@ -103,10 +103,19 @@ export function useBattle(teamApi: ReturnType<typeof useTeam>) {
     const wildPick = pool[Math.floor(Math.random() * pool.length)];
     const wildLevel = rollWildLevel(activeMon.level);
 
-    const [a, b] = await Promise.all([
-      fetchFighter(queryClient, "a", activeMon.slug, activeMon.level, lang),
-      fetchFighter(queryClient, "b", wildPick.name, wildLevel, lang),
-    ]);
+    let a: BattleFighter;
+    let b: BattleFighter;
+    try {
+      [a, b] = await Promise.all([
+        fetchFighter(queryClient, "a", activeMon.slug, activeMon.level, lang),
+        fetchFighter(queryClient, "b", wildPick.name, wildLevel, lang),
+      ]);
+    } catch {
+      if (battleId.current !== thisBattle) return;
+      setLog([t("battle.loadError")]);
+      setStatus("idle");
+      return;
+    }
     if (battleId.current !== thisBattle) return;
 
     setFighterA(a);
@@ -165,16 +174,21 @@ export function useBattle(teamApi: ReturnType<typeof useTeam>) {
           let finalSlug = activeMon.slug;
           if (leveledUp) {
             setLog((prev) => [...prev, t("battle.log.levelUp", { name: a.displayName, level: newLevel })]);
-            finalSlug = await resolveEvolutions(queryClient, activeMon.slug, newLevel);
-            if (battleId.current !== thisBattle) return;
-            if (finalSlug !== activeMon.slug) {
-              const evolvedSpecies = await queryClient.fetchQuery({
-                queryKey: ["species", finalSlug],
-                queryFn: () => getPokemonSpecies(finalSlug),
-                staleTime: Infinity,
-              });
-              const evolvedName = localizedName(evolvedSpecies.names, lang, finalSlug.replace(/-/g, " "));
-              setLog((prev) => [...prev, t("battle.log.evolved", { from: a.displayName, to: evolvedName })]);
+            try {
+              finalSlug = await resolveEvolutions(queryClient, activeMon.slug, newLevel);
+              if (battleId.current !== thisBattle) return;
+              if (finalSlug !== activeMon.slug) {
+                const evolvedSpecies = await queryClient.fetchQuery({
+                  queryKey: ["species", finalSlug],
+                  queryFn: () => getPokemonSpecies(finalSlug),
+                  staleTime: Infinity,
+                });
+                const evolvedName = localizedName(evolvedSpecies.names, lang, finalSlug.replace(/-/g, " "));
+                setLog((prev) => [...prev, t("battle.log.evolved", { from: a.displayName, to: evolvedName })]);
+              }
+            } catch {
+              // Evolution lookup failed (e.g. species data hiccup) — keep the level-up, just skip evolving.
+              finalSlug = activeMon.slug;
             }
           }
 

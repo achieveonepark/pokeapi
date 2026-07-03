@@ -2,6 +2,7 @@ import { useQueries, useQuery } from "@tanstack/react-query";
 import {
   getAbilityDetail,
   getAllPokemonIndex,
+  getAllSpeciesIndex,
   getAllTypes,
   getEvolutionChain,
   getMoveDetail,
@@ -14,6 +15,15 @@ export function usePokemonIndex() {
   return useQuery({
     queryKey: ["pokemon-index"],
     queryFn: getAllPokemonIndex,
+    staleTime: Infinity,
+  });
+}
+
+/** Species-only index (no form/mega/gmax variants) — safe for anything needing a matching species. */
+export function useSpeciesIndex() {
+  return useQuery({
+    queryKey: ["species-index"],
+    queryFn: getAllSpeciesIndex,
     staleTime: Infinity,
   });
 }

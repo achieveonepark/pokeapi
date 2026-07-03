@@ -18,10 +18,23 @@ async function getJSON<T>(url: string): Promise<T> {
   return res.json() as Promise<T>;
 }
 
-/** Fetches the full name/url index of every Pokemon species entry in one shot. */
+/** Fetches the full name/url index of every Pokemon (including forms/megas/gmax) in one shot. */
 export function getAllPokemonIndex() {
   return getJSON<PokemonListResponse>(
     `${BASE_URL}/pokemon?limit=100000&offset=0`,
+  );
+}
+
+/**
+ * Fetches the full name/url index of every Pokemon *species* (base forms only,
+ * one entry per species — no megas/gmax/regional-form variants). Unlike
+ * `/pokemon` entries, every name here is guaranteed to have a matching
+ * `/pokemon-species/{name}` AND `/pokemon/{name}` (its default form), so it's
+ * safe to use for anything that needs both (e.g. battle encounters).
+ */
+export function getAllSpeciesIndex() {
+  return getJSON<PokemonListResponse>(
+    `${BASE_URL}/pokemon-species?limit=100000&offset=0`,
   );
 }
 
