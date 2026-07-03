@@ -42,6 +42,10 @@ REST API — no backend server required.
     PokeAPI) — no accuracy rolls, status moves, or held items. It's meant to
     capture the "watching your Pokemon fight and grow" feeling, not be a
     rules-accurate battle engine.
+  - Hit feedback: the attacker pulses, the defender shakes (bigger shake on
+    crits/super-effective hits), a floating damage number pops up in
+    red (gold for crits), and a colored flash + "Super Effective!" / "Not
+    Very Effective..." label appear over the sprite for a beat.
 
 ## Prerequisites (macOS)
 

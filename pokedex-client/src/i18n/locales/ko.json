@@ -23,6 +23,8 @@
     "teamFullPrompt": "팀이 가득 찼습니다. {{name}}을(를) 위해 내보낼 포켓몬을 고르거나, 놓아주세요.",
     "outcomeWin": "승리!",
     "outcomeLose": "패배...",
+    "superEffectiveLabel": "효과가 굉장했다!",
+    "notVeryEffectiveLabel": "효과가 별로인 듯...",
     "log": {
       "start": "{{a}}와(과) {{b}}의 대결이 시작됩니다!",
       "hit": "{{attacker}}의 {{move}}! {{defender}}에게 {{damage}}의 데미지!",

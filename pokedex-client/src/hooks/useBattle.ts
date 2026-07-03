@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { getEvolutionChain, getPokemonByName, getPokemonSpecies } from "../api/client";
 import { localizedName } from "../api/textUtils";
 import { buildFighter, resolveTurn } from "../battle/simulate";
-import type { BattleFighter, TurnResult } from "../battle/types";
+import type { BattleFighter, HitEffectiveness, TurnResult } from "../battle/types";
 import { applyExp, expGainForVictory, rollWildLevel } from "../team/growth";
 import { findLevelEvolution } from "../team/evolution";
 import type { OwnedPokemon } from "../team/types";
@@ -13,6 +13,15 @@ import { usePokemonIndex } from "./usePokemon";
 
 export type BattleStatus = "idle" | "loading" | "fighting" | "result";
 export type BattleOutcome = "win" | "lose" | null;
+
+export interface HitEvent {
+  id: number;
+  attackerKey: "a" | "b";
+  defenderKey: "a" | "b";
+  damage: number;
+  effectiveness: HitEffectiveness;
+  isCrit: boolean;
+}
 
 const TURN_DELAY_MS = 1100;
 
@@ -72,8 +81,10 @@ export function useBattle(teamApi: ReturnType<typeof useTeam>) {
   const [outcome, setOutcome] = useState<BattleOutcome>(null);
   const [capturePending, setCapturePending] = useState(false);
   const [wildCatch, setWildCatch] = useState<OwnedPokemon | null>(null);
+  const [lastHit, setLastHit] = useState<HitEvent | null>(null);
   const battleId = useRef(0);
   const activeIndexRef = useRef<number>(0);
+  const hitIdRef = useRef(0);
 
   const start = useCallback(async () => {
     const activeMon = teamApi.active;
@@ -86,6 +97,7 @@ export function useBattle(teamApi: ReturnType<typeof useTeam>) {
     setOutcome(null);
     setCapturePending(false);
     setWildCatch(null);
+    setLastHit(null);
 
     const pool = index.results;
     const wildPick = pool[Math.floor(Math.random() * pool.length)];
@@ -114,7 +126,14 @@ export function useBattle(teamApi: ReturnType<typeof useTeam>) {
       try {
         result = await resolveTurn(attacker, defender, lang, t);
       } catch {
-        result = { message: t("battle.log.noDamage", { attacker: attacker.displayName, move: "?" }), attacker: attacker.key, damage: 0, fainted: false };
+        result = {
+          message: t("battle.log.noDamage", { attacker: attacker.displayName, move: "?" }),
+          attacker: attacker.key,
+          damage: 0,
+          fainted: false,
+          effectiveness: "normal",
+          isCrit: false,
+        };
       }
       if (battleId.current !== thisBattle) return;
 
@@ -125,6 +144,14 @@ export function useBattle(teamApi: ReturnType<typeof useTeam>) {
       else setFighterB(updatedDefender);
 
       setLog((prev) => [...prev, result.message]);
+      setLastHit({
+        id: ++hitIdRef.current,
+        attackerKey: attacker.key,
+        defenderKey: defender.key,
+        damage: result.damage,
+        effectiveness: result.effectiveness,
+        isCrit: result.isCrit,
+      });
 
       if (newDefenderHp <= 0) {
         const playerWon = defender.key === "b";
@@ -186,5 +213,5 @@ export function useBattle(teamApi: ReturnType<typeof useTeam>) {
     [teamApi, wildCatch],
   );
 
-  return { status, fighterA, fighterB, log, outcome, capturePending, wildCatch, start, decideCapture };
+  return { status, fighterA, fighterB, log, outcome, capturePending, wildCatch, lastHit, start, decideCapture };
 }

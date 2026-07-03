@@ -5,17 +5,31 @@ import { StarterPicker } from "../components/StarterPicker";
 import { TeamRoster } from "../components/TeamRoster";
 import { TypeBadge } from "../components/TypeBadge";
 import { useBattle } from "../hooks/useBattle";
+import type { HitEvent } from "../hooks/useBattle";
 import { STARTER_LEVEL } from "../team/growth";
 import { useTeam } from "../team/useTeam";
 import type { BattleFighter } from "../battle/types";
 
-function FighterPanel({ fighter, mirrored }: { fighter: BattleFighter | null; mirrored?: boolean }) {
+function FighterPanel({
+  fighter,
+  mirrored,
+  hit,
+}: {
+  fighter: BattleFighter | null;
+  mirrored?: boolean;
+  hit: HitEvent | null;
+}) {
   const { t } = useTranslation();
   if (!fighter) return <div className="fighter-panel fighter-placeholder" />;
 
   const pct = Math.max(0, Math.min(100, (fighter.hp / fighter.maxHp) * 100));
   const hpColor = pct > 50 ? "#4caf50" : pct > 20 ? "#ffb300" : "#e64a4a";
   const fainted = fighter.hp <= 0;
+
+  const isTarget = hit?.defenderKey === fighter.key;
+  const isAttacker = hit?.attackerKey === fighter.key;
+  const shakeClass = isTarget && hit && hit.damage > 0 ? (hit.isCrit || hit.effectiveness === "super" ? "hit-shake-strong" : "hit-shake") : "";
+  const attackClass = isAttacker ? "attack-pulse" : "";
 
   return (
     <div className={`fighter-panel ${fainted ? "fainted" : ""}`}>
@@ -37,11 +51,34 @@ function FighterPanel({ fighter, mirrored }: { fighter: BattleFighter | null; mi
           {fighter.hp}/{fighter.maxHp}
         </span>
       </div>
-      <img
-        src={fighter.sprite}
-        alt={fighter.displayName}
-        className={`fighter-sprite ${mirrored ? "mirrored" : ""}`}
-      />
+      <div className="fighter-sprite-slot">
+        {isTarget && hit && (
+          <span key={`flash-${hit.id}`} className={`hit-flash ${hit.effectiveness} ${hit.damage === 0 ? "miss" : ""}`} />
+        )}
+        {isTarget && hit && hit.damage > 0 && (
+          <span key={`dmg-${hit.id}`} className={`damage-popup ${hit.isCrit ? "crit" : ""}`}>
+            -{hit.damage}
+          </span>
+        )}
+        {isTarget && hit && hit.effectiveness === "super" && (
+          <span key={`fx-${hit.id}`} className="effect-label super">
+            {t("battle.superEffectiveLabel")}
+          </span>
+        )}
+        {isTarget && hit && hit.effectiveness === "not-very" && (
+          <span key={`fx-${hit.id}`} className="effect-label not-very">
+            {t("battle.notVeryEffectiveLabel")}
+          </span>
+        )}
+        <span className={`fighter-sprite-flip ${mirrored ? "mirrored" : ""}`}>
+          <img
+            key={isTarget && hit ? `shake-${hit.id}` : isAttacker && hit ? `attack-${hit.id}` : "static"}
+            src={fighter.sprite}
+            alt={fighter.displayName}
+            className={`fighter-sprite ${shakeClass} ${attackClass}`}
+          />
+        </span>
+      </div>
     </div>
   );
 }
@@ -49,7 +86,8 @@ function FighterPanel({ fighter, mirrored }: { fighter: BattleFighter | null; mi
 export function BattlePage() {
   const { t } = useTranslation();
   const teamApi = useTeam();
-  const { status, fighterA, fighterB, log, outcome, capturePending, start, decideCapture } = useBattle(teamApi);
+  const { status, fighterA, fighterB, log, outcome, capturePending, lastHit, start, decideCapture } =
+    useBattle(teamApi);
   const logRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -81,9 +119,9 @@ export function BattlePage() {
       />
 
       <div className="battle-arena">
-        <FighterPanel fighter={fighterB} mirrored />
+        <FighterPanel fighter={fighterB} mirrored hit={lastHit} />
         <span className="battle-vs">VS</span>
-        <FighterPanel fighter={fighterA} />
+        <FighterPanel fighter={fighterA} hit={lastHit} />
       </div>
 
       <div className="battle-log" ref={logRef}>
